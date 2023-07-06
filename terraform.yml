@@ -1,0 +1,29 @@
+- hosts: localhost
+  tasks:
+    - name: Terraformを実行する
+      community.general.terraform:
+        project_path: "terraform/"
+        state: present
+    - name: 作成した EC2 インスタンスをインベントリに反映させる
+      ansible.builtin.meta: refresh_inventory
+
+- hosts: tag_Name_ansible_example
+  vars:
+    ansible_user: ec2-user
+    ansible_ssh_private_key_file: /home/rocky/.ssh/rocky-linux-network
+    ansible_python_interpreter: /usr/bin/python3
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: ssh接続できるまで待機
+      ansible.builtin.wait_for_connection:
+    - name: ホストの情報を取得する
+      ansible.builtin.setup:
+    - name: Apache HTTPD をインストールする
+      ansible.builtin.yum:
+        name: httpd
+        state: present
+    - name: Apache HTTPD を起動する
+      ansible.builtin.systemd:
+        name: httpd.service
+        state: started

@@ -1,0 +1,52 @@
+- hosts: localhost
+  become: yes
+  vars:
+    nginx_version:
+      Rocky: '1:1.20.1-13.el9'
+  tasks:
+    - name: ファイルをコピーする
+      ansible.builtin.copy:
+        src: example.txt
+        dest: /tmp/
+    - name: Nginxをインストールする
+      ansible.builtin.dnf:
+        name: nginx
+        state: present
+      when: ansible_distribution == "Rocky"
+    - name: Nginxを起動
+      ansible.builtin.systemd:
+        name: nginx.service
+        enabled: yes
+        state: started
+    - name: Nginxの設定を変更する
+      ansible.builtin.copy:
+        content: |
+          server_tokens off;
+        dest: /etc/nginx/conf.d/custom.conf
+      notify: Nginxを再起動する
+    - name: パッケージ情報を収集する
+      ansible.builtin.package_facts:
+    - name: nginxパッケージのバージョン情報を表示する
+      ansible.builtin.debug:
+        var: ansible_facts.packages['nginx']
+    - name: パッケージ情報を収集する
+      ansible.builtin.package_facts:
+    - name: パッケージ情報を記録する
+      ansible.builtin.lineinfile:
+        path: versions.txt
+        regexp: "^{{ inventory_hostname }}"
+        line: "{{ inventory_hostname }}: {{ item.name }}-{{ item.version }}"
+        create: yes
+      loop: "{{ ansible_facts.packages['nginx'] }}"
+      when: ansible_distribution == "Rocky"
+      delegate_to: localhost
+    - name: 指定したバージョンのnginxにアップデートする
+      ansible.builtin.dnf:
+        name: "nginx-{{ nginx_version.Rocky }}"
+        state: present
+      when: ansible_distribution == "Rocky"
+  handlers:
+    - name: Nginxを再起動する
+      ansible.builtin.systemd:
+        name: nginx.service
+        state: restarted
