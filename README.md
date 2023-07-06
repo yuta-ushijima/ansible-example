@@ -4,3 +4,5 @@
 ## 今からでも間に合う「Ansible」徹底入門、無料の電子書籍で運用自動化を学ぼう
 - https://atmarkit.itmedia.co.jp/ait/articles/2306/27/news013.html
 
+## 構成図
+![rocky-linux-network.drawio.png](rocky-linux-network.drawio.png)
